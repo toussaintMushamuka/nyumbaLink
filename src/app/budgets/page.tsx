@@ -5,8 +5,12 @@ import Navbar from "../components/Navbar";
 import Wrapper from "../components/Wrapper";
 import { useUser } from "@clerk/nextjs";
 import EmojiPicker from "emoji-picker-react";
-import { addBudget } from "../actions";
+import { addBudget, getBudgetsByUser } from "../actions";
 import Notification from "../components/Notification";
+import { Budget } from "@/type";
+import Link from "next/link";
+import BudgetItm from "../components/BudgetItm";
+import { Landmark } from "lucide-react";
 
 const page = () => {
   const { user } = useUser();
@@ -14,6 +18,7 @@ const page = () => {
   const [budgetamount, setBudgetAmount] = useState<string>("");
   const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
   const [selectedEmoji, setSelectedEmoji] = useState<string>("");
+  const [budgets, setBudgets] = useState<Budget[]>([]);
 
   const [notification, setNotification] = useState<string>("");
   const closeNotification = () => {
@@ -35,6 +40,7 @@ const page = () => {
         amount,
         selectedEmoji
       );
+      fatchBudgets();
       const modal = document.getElementById("my_modal_3") as HTMLDialogElement;
       if (modal) {
         modal.close();
@@ -45,7 +51,25 @@ const page = () => {
       setSelectedEmoji("");
       setShowEmojiPicker(false);
     } catch (error) {
-      setNotification(`Erreur lors de l'ajout du budget : ${error} ` );
+      setNotification(`Erreur lors de l'ajout du budget : ${error} `);
+    }
+  };
+
+  useEffect(() => {
+    fatchBudgets();
+  }, [user?.primaryEmailAddress?.emailAddress]);
+  const fatchBudgets = async () => {
+    if (user?.primaryEmailAddress?.emailAddress) {
+      try {
+        const userBudgets = await getBudgetsByUser(
+          user.primaryEmailAddress.emailAddress
+        );
+        setBudgets(userBudgets ?? []);
+      } catch (error) {
+        setNotification(
+          `Erreur lors de la récupération des budgets : ${error}`
+        );
+      }
     }
   };
 
@@ -66,7 +90,8 @@ const page = () => {
             ).showModal()
           }
         >
-          nouveau budget
+          nouveau
+          <Landmark className="w-4" />
         </button>
         <dialog id="my_modal_3" className="modal">
           <div className="modal-box">
@@ -114,6 +139,13 @@ const page = () => {
             </div>
           </div>
         </dialog>
+        <ul className="grid md:grid-cols-3 mt-4 gap-4">
+          {budgets.map((budget) => (
+            <Link href={""} key={budget.id}>
+              <BudgetItm budget={budget} enableHover={1}></BudgetItm>
+            </Link>
+          ))}
+        </ul>
       </Wrapper>
     </div>
   );

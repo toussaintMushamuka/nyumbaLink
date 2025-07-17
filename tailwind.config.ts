@@ -10,8 +10,8 @@ export default withUt({
   theme: {
     extend: {
       colors: {
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        background: "var(--background)",
+        foreground: "var(--foreground)",
       },
     },
   },
