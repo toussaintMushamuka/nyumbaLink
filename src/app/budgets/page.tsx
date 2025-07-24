@@ -141,7 +141,7 @@ const page = () => {
         </dialog>
         <ul className="grid md:grid-cols-3 mt-4 gap-4">
           {budgets.map((budget) => (
-            <Link href={""} key={budget.id}>
+            <Link href={`/manage/${budget.id}`} key={budget.id}>
               <BudgetItm budget={budget} enableHover={1}></BudgetItm>
             </Link>
           ))}
