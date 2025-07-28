@@ -85,3 +85,83 @@ export async function getTransactionByBudgetId(budgetId: string) {
     console.error("Erreur lors de la recuperation des transactions", error);
   }
 }
+
+export async function addTrasactionToBudget(
+  budgetId: string,
+  amount: number,
+  description: string
+) {
+  try {
+    const budget = await prisma.budget.findUnique({
+      where: { id: budgetId },
+      include: {
+        transactions: true,
+      },
+    });
+    if (!budget) {
+      throw new Error("Budget non trouvé");
+    }
+    const totalTransaction = budget.transactions.reduce((sum, transaction) => {
+      return sum + transaction.amount;
+    }, 0);
+
+    const totalWithNewTransaction = totalTransaction + amount;
+    if (totalWithNewTransaction > budget.amount) {
+      throw new Error("Le montant total des transactions dépasse le budget");
+    }
+    // Ajout de la nouvelle transaction
+    const newTransaction = await prisma.transaction.create({
+      data: {
+        amount,
+        description,
+        emoji: budget.emoji,
+        budget: {
+          connect: { id: budgetId },
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Erreur lors de l'ajout de la transaction au budget", error);
+    throw error;
+  }
+}
+
+export const deleteBudget = async (budgetId: string) => {
+  try {
+    await prisma.transaction.deleteMany({
+      where: { budgetId },
+    });
+    await prisma.budget.delete({
+      where: {
+        id: budgetId,
+      },
+    });
+  } catch (error) {
+    console.error(
+      "Error lors de la suppression de budget et de ses transactions:",
+      error
+    );
+    throw error;
+  }
+};
+
+export const deleteTransaction = async (transactionId: string) => {
+  try {
+    const transaction = await prisma.transaction.findUnique({
+      where: {
+        id: transactionId,
+      },
+    });
+    if (!transaction) {
+      throw new Error("Transaction non trouvé.");
+    }
+    await prisma.transaction.delete({
+      where: {
+        id: transactionId,
+      },
+    });
+  } catch (error) {
+    console.error("Error lors de la suppression de la transaction:", error);
+    throw error;
+  }
+};
