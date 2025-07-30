@@ -1,6 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
+import { Budget, Transaction } from "@/type";
 
 export async function checkAndAddUser(email: string | undefined) {
   if (!email) return;
@@ -165,3 +166,70 @@ export const deleteTransaction = async (transactionId: string) => {
     throw error;
   }
 };
+
+export async function getTransactionByEmaiPeriod(
+  email: string,
+  period: string
+) {
+  try {
+    const now = new Date();
+    let dateLinit;
+
+    switch (period) {
+      case "last30":
+        dateLinit = new Date(now);
+        dateLinit.setDate(now.getDate() - 30);
+        break;
+      case "last90":
+        dateLinit = new Date(now);
+        dateLinit.setDate(now.getDate() - 90);
+        break;
+      case "last7":
+        dateLinit = new Date(now);
+        dateLinit.setDate(now.getDate() - 7);
+        break;
+      case "last365":
+        dateLinit = new Date(now);
+        dateLinit.setDate(now.getFullYear() - 1);
+        break;
+
+      default:
+        throw new Error("période invalide.");
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email },
+      include: {
+        budgets: {
+          include: {
+            transactions: {
+              where: {
+                createdAt: {
+                  gte: dateLinit,
+                },
+              },
+              orderBy: {
+                createdAt: "desc",
+              },
+            },
+          },
+        },
+      },
+    });
+    if (!user) {
+      throw new Error("utilisateur non trouvé");
+    }
+
+    const transactions = user.budgets.flatMap((budget) =>
+      budget.transactions.map((transaction) => ({
+        ...transaction,
+        budgetName: budget.name,
+      }))
+    );
+
+    return transactions;
+  } catch (error) {
+    console.error("erreur lors de la recupération de la transaction", error);
+    throw error;
+  }
+}
