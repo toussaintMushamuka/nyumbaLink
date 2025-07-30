@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { Budget, Transaction } from "@/type";
+import budgets from "./data";
 
 export async function checkAndAddUser(email: string | undefined) {
   if (!email) return;
@@ -167,7 +168,7 @@ export const deleteTransaction = async (transactionId: string) => {
   }
 };
 
-export async function getTransactionByEmaiPeriod(
+export async function getTransactionByEmailPeriod(
   email: string,
   period: string
 ) {
@@ -190,7 +191,7 @@ export async function getTransactionByEmaiPeriod(
         break;
       case "last365":
         dateLinit = new Date(now);
-        dateLinit.setDate(now.getFullYear() - 1);
+        dateLinit.setFullYear(now.getFullYear() - 1);
         break;
 
       default:
@@ -224,6 +225,7 @@ export async function getTransactionByEmaiPeriod(
       budget.transactions.map((transaction) => ({
         ...transaction,
         budgetName: budget.name,
+        budgetId: budget.id,
       }))
     );
 
@@ -232,4 +234,34 @@ export async function getTransactionByEmaiPeriod(
     console.error("erreur lors de la recupération de la transaction", error);
     throw error;
   }
+}
+
+// dashboard
+
+export async function getTotalTransactionAmount(email: string) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email },
+      include: {
+        budgets: {
+          include: {
+            transactions: true,
+          },
+        },
+      },
+    });
+
+    if (!user) throw new Error("utilisateur non trouvé");
+
+    const totalAmount = user.budgets.reduce((sum, budgets) => {
+      return (
+        sum +
+        budgets.transactions.reduce(
+          (budgetSum, transaction) => budgetSum + transaction.amount,
+          0
+        )
+      );
+    }, 0);
+    return totalAmount;
+  } catch (error) {}
 }
