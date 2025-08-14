@@ -265,3 +265,96 @@ export async function getTotalTransactionAmount(email: string) {
     return totalAmount;
   } catch (error) {}
 }
+
+export async function getTotalTransactionCount(email: string) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email },
+      include: {
+        budgets: {
+          include: {
+            transactions: true,
+          },
+        },
+      },
+    });
+    if (!user) throw new Error("utilisateur non trouvé");
+    const totalCount = user.budgets.reduce((count, budgets) => {
+      return count + budgets.transactions.length;
+    }, 0);
+    return totalCount;
+  } catch (error) {
+    console.error(
+      "Erreur lors de la récupération du nombre total de transactions:",
+      error
+    );
+    throw error;
+  }
+}
+
+export async function getReachBudgets(email: string) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email },
+      include: {
+        budgets: {
+          include: {
+            transactions: true,
+          },
+        },
+      },
+    });
+    if (!user) throw new Error("utilisateur non trouvé");
+    const totalBudgets = user.budgets.length;
+
+    const reachedBudgets = user.budgets.filter((budget) => {
+      const totalTransactionAmount = budget.transactions.reduce(
+        (sum, transaction) => sum + transaction.amount,
+        0
+      );
+      return totalTransactionAmount >= budget.amount;
+    }).length;
+    return `${reachedBudgets} / ${totalBudgets}`;
+  } catch (error) {
+    console.error(
+      "Erreur lors de la récupération des budgets atteints:",
+      error
+    );
+    throw error;
+  }
+}
+
+export async function getUserBudgetData(email: string) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email },
+      include: {
+        budgets: {
+          include: {
+            transactions: true,
+          },
+        },
+      },
+    });
+    if (!user) {
+      throw new Error("Utilisateur non trouvé");
+    }
+    const data = user.budgets.map((budget) => {
+      const totalTransactionAmount = budget.transactions.reduce(
+        (sum, transaction) => sum + transaction.amount,
+        0
+      );
+      return {
+        budgetName: budget.name,
+        totalBudgetAmount: budget.amount,
+        totalTransactionAmount,
+      };
+    });
+  } catch (error) {
+    console.error(
+      "Erreur lors de la récupération des données de l'utilisateur:",
+      error
+    );
+    throw error;
+  }
+}
