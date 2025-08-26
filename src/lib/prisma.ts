@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client"; // chemin par défaut généré par Prisma
+import { PrismaClient } from "@prisma/client";
 
 const prismaClientSingleton = () => {
   return new PrismaClient();

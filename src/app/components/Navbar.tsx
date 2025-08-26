@@ -1,12 +1,19 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Image from "next/image";
 import { UserButton, useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { User } from "@clerk/nextjs/server";
+import { chekAndAddUser } from "../actions";
 const Navbar = () => {
   const { isLoaded, isSignedIn, user } = useUser();
+
+  useEffect(() => {
+    if (user?.primaryEmailAddress?.emailAddress) {
+      chekAndAddUser(user?.primaryEmailAddress?.emailAddress);
+    }
+  }, [user]);
   return (
     <div className=" bg-base-200/30 shadow-sm px-5 md:px-[10%] py-4">
       {isLoaded &&
