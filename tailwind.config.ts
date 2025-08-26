@@ -17,6 +17,6 @@ export default withUt({
   },
   plugins: [require("daisyui")],
   daisyui: {
-    themes: ["light", "dark", "cupcake"],
+    themes: ["ligth", "dark", "garden"],
   },
 } satisfies Config);

@@ -5,7 +5,6 @@ import {
   SignedIn,
   SignedOut,
   SignInButton,
-  SignUpButton,
   UserButton,
 } from "@clerk/nextjs";
 import "./globals.css";
@@ -32,7 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en" data-theme="cupcake">
+      <html lang="en" data-theme="garden">
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >

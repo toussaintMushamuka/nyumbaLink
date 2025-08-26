@@ -1,68 +1,54 @@
 "use client";
+
+import React from "react";
+import Image from "next/image";
 import { UserButton, useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import React, { useEffect } from "react";
-import { checkAndAddUser } from "../actions";
-
-const navbar = () => {
+import { User } from "@clerk/nextjs/server";
+const Navbar = () => {
   const { isLoaded, isSignedIn, user } = useUser();
-
-  useEffect(() => {
-    if (user?.primaryEmailAddress?.emailAddress) {
-      checkAndAddUser(user?.primaryEmailAddress?.emailAddress);
-    }
-  }, [user]);
   return (
-    <div className="bg-base-200/10 px-5 md:px-[10%] py-4">
+    <div className=" bg-base-200/30 shadow-sm px-5 md:px-[10%] py-4">
       {isLoaded &&
         (isSignedIn ? (
-          <>
-            <div className="flex justify-between items-center">
-              <div className=" flex text-2xl items-center font-bold">
-                <Link href="/" className="cursor-pointer">
-                  e. <span className="text-accent"> Track</span>
-                </Link>
-              </div>
-              <div className="md:flex hidden">
-                <Link href={"/budgets"} className="btn">
-                  Mes budgets
-                </Link>
-                <Link href={"/dashboard"} className="btn mx-4">
-                  Tableau de bord
-                </Link>
-                <Link href={"/transactions"} className="btn mx-4">
-                  Mes Transactions
-                </Link>
-              </div>
-              <UserButton />
+          <div className="flex justify-between items-center">
+            <div className="flex items-center">
+              <Image
+                src="/logo.png"
+                alt="NyumbaLink Logo"
+                width={80}
+                height={80}
+                className="cursor-pointer"
+              />
             </div>
-
-            <div className="flex md:hidden mt-2 justify-center">
-              <Link href={"/budgets"} className="btn btn-sm">
-                Mes budgets
+            <div className="flex gap-6">
+              <Link href="/" className="text-lg font-semibold">
+                Accueil
               </Link>
-              <Link href={"/dashboard"} className="btn btn-sm mx-4">
-                Tableau de bord
-              </Link>
-              <Link href={"/transactions"} className="btn btn-sm mx-4">
-                Mes Transactions
+              <Link href="/annonces" className="text-lg font-semibold">
+                Annonces
               </Link>
             </div>
-          </>
+            <UserButton />
+          </div>
         ) : (
           <div>
             <div className="flex justify-between items-center">
-              <div className=" flex text-2xl items-center font-bold">
-                <Link href="/" className="cursor-pointer">
-                  e. <span className="text-accent"> Track</span>
-                </Link>
+              <div className="flex items-center">
+                <Image
+                  src="/logo.png"
+                  alt="NyumbaLink Logo"
+                  width={80}
+                  height={80}
+                  className="cursor-pointer"
+                />
               </div>
-              <div className="flex mt-2 justify-center">
-                <Link href={"/sign-in"} className="btn btn-sm">
-                  se connecter
+              <div className="flex gap-6">
+                <Link href="/sign-in" className="text-lg font-semibold">
+                  Se connecter
                 </Link>
-                <Link href={"/sign-up"} className="btn btn-sm btn-accent mx-4">
-                  s'inscrire
+                <Link href="/sign-up" className="text-lg font-semibold">
+                  S'inscrire
                 </Link>
               </div>
             </div>
@@ -72,4 +58,4 @@ const navbar = () => {
   );
 };
 
-export default navbar;
+export default Navbar;

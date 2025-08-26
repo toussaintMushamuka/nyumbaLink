@@ -1,37 +1,41 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
+
 model User {
-  id            String       @id @default(uuid())
-  email         String       @unique
-  createdAt     DateTime     @default(now())
-  budgets       Budget[]
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  phone     String?
+  annonces  Annonce[] @relation("UserAnnonces")
+  createdAt DateTime @default(now())
 }
-model Budget {
-  id           String       @id @default(uuid())
-  name         String
-  amount       Float
-  userId       String
-  user         User         @relation(fields: [userId], references: [id])
-  emoji        String?   
-  transactions Transaction[]
-  createdAt    DateTime     @default(now())
-}
-model Transaction {
-  id           String     @id @default(uuid())
-  description  String
-  amount       Float
-  budgetId     String?
-  budget       Budget?    @relation(fields: [budgetId], references: [id])
-  emoji        String?  
-  createdAt    DateTime   @default(now())
+
+model Annonce {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation("UserAnnonces", fields: [userId], references: [id])
+  commune         String
+  quartier        String
+  avenue          String
+  nombreDeChambre Int
+  description     String
+  numTel          String
+  images          String[]   // tableau d'URLs d'images
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
