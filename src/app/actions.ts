@@ -71,3 +71,21 @@ export async function addAnnonce(input: AddAnnonceInput) {
     throw error; // On relance l'erreur pour que le front la capture
   }
 }
+
+export async function getAnnoncesByUser(email: string) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email },
+      include: { annonces: true },
+    });
+
+    if (!user) {
+      throw new Error("Utilisateur non trouvé");
+    }
+
+    return user.annonces;
+  } catch (error) {
+    console.error("Erreur lors de la récupération des annonces :", error);
+    throw error;
+  }
+}

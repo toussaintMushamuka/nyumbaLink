@@ -1,11 +1,15 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Wrapper from "../components/Wrapper";
 import { useUser } from "@clerk/nextjs";
-import { addAnnonce } from "../actions";
+import { addAnnonce, getAnnoncesByUser } from "../actions";
 import { UploadButton, UploadDropzone } from "@/lib/uploadthing";
 import { isReactCompilerRequired } from "next/dist/build/swc/generated-native";
 import { toast } from "react-hot-toast";
+import { annonce } from "@/type";
+import Link from "next/link";
+import AnnonceItem from "../components/annonceItem";
+import { Landmark } from "lucide-react";
 
 const page = () => {
   const { user } = useUser();
@@ -16,6 +20,7 @@ const page = () => {
   const [numTel, setNumTel] = useState<string>("");
   const [chambres, setChambres] = useState<string>("");
   const [images, setImages] = useState<string[]>([]); // tableau d'URLs
+  const [annonces, setAnnonces] = useState<annonce[]>([]);
 
   const handleUploadComplete = (res: any) => {
     if (!res || res.length === 0) {
@@ -74,8 +79,17 @@ const page = () => {
         numTel: numTelTrimmed,
         nombreDeChambre: chambresNumber,
       });
+      fetchAnnonces(); // Rafraîchir la liste des annonces après l'ajout
 
       toast.success("Annonce publiée avec succès ✅");
+      setAvenue("");
+      setChambres("");
+      setCommune("");
+      setDescription("");
+      setNumTel("");
+      setQuartier("");
+      setImages([]);
+      // Fermer la modal après soumission
 
       const modal = document.getElementById("my_modal_3") as HTMLDialogElement;
       if (modal) {
@@ -89,6 +103,28 @@ const page = () => {
     }
   };
 
+  const fetchAnnonces = async () => {
+    if (user?.primaryEmailAddress?.emailAddress) {
+      try {
+        const userAnnonces = await getAnnoncesByUser(
+          user?.primaryEmailAddress?.emailAddress
+        );
+        // Ajoute la propriété 'user' attendue par le type 'annonce'
+        const annoncesWithUser = userAnnonces.map((annonce: any) => ({
+          ...annonce,
+          user: annonce.user ?? null, // ou fournir un objet utilisateur par défaut si nécessaire
+        }));
+        setAnnonces(annoncesWithUser);
+      } catch (error) {
+        toast.error("Erreur lors de la récupération des annonces.");
+        return;
+      }
+    }
+  };
+  useEffect(() => {
+    fetchAnnonces();
+  }, [user?.primaryEmailAddress?.emailAddress]);
+
   return (
     <Wrapper>
       <button
@@ -100,6 +136,7 @@ const page = () => {
         }
       >
         Ajouter une annonce
+        <Landmark className="w-4" />
       </button>
       <dialog id="my_modal_3" className="modal">
         <div className="modal-box">
@@ -164,10 +201,20 @@ const page = () => {
             />
             <div>
               <UploadButton
-                className="input input-bordered w-full mb-3"
+                className=" w-full "
                 endpoint="imageUploader"
                 onClientUploadComplete={(res) => {
                   handleUploadComplete(res);
+                }}
+                content={{
+                  button: "Choisir une image", // texte du bouton
+                  allowedContent:
+                    "Tu ne peux ajouter que 3 images avec une taille maximale de (max 4MB)", // texte sous le bouton
+                }}
+                appearance={{
+                  button: "btn btn-accent bg-accent mt-2 w-full", // applique daisyUI ou tailwind
+                  container: "flex flex-col gap-2",
+                  allowedContent: "text-sm text-gray-500",
                 }}
               />
 
@@ -187,12 +234,19 @@ const page = () => {
               )}
             </div>
 
-            <button className="btn bg-accent" onClick={handeleAddAnnonce}>
+            <button className="btn mt-4" onClick={handeleAddAnnonce}>
               Publier l'annonce
             </button>
           </div>
         </div>
       </dialog>
+      <ul className="grid md:grid-cols-3 gap-4 mt-4">
+        {annonces.map((annonce) => (
+          <Link href={""} key={annonce.id}>
+            <AnnonceItem annonce={annonce}></AnnonceItem>
+          </Link>
+        ))}
+      </ul>
     </Wrapper>
   );
 };
