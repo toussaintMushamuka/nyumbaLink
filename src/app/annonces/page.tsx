@@ -5,6 +5,7 @@ import { useUser } from "@clerk/nextjs";
 import { addAnnonce } from "../actions";
 import { UploadButton, UploadDropzone } from "@/lib/uploadthing";
 import { isReactCompilerRequired } from "next/dist/build/swc/generated-native";
+import { toast } from "react-hot-toast";
 
 const page = () => {
   const { user } = useUser();
@@ -17,18 +18,52 @@ const page = () => {
   const [images, setImages] = useState<string[]>([]); // tableau d'URLs
 
   const handleUploadComplete = (res: any) => {
-    // `res` est un tableau des fichiers uploadés avec leurs URLs
-    const urls = res.map((file: { fileUrl: string }) => file.fileUrl);
+    if (!res || res.length === 0) {
+      toast.error("L'upload a échoué, veuillez réessayer.");
+      return;
+    }
+
+    // Vérifie la structure et utilise res[0].url
+    const urls = res
+      .map((file: { url?: string }) => file.url)
+      .filter((url: any): url is string => !!url);
+
+    if (urls.length === 0) {
+      console.log("Résultat brut UploadThing :", res); // 👀 pour vérifier
+      toast.error("Aucune image valide trouvée.");
+      return;
+    }
+
     setImages(urls);
+    toast.success("Image(s) uploadée(s) avec succès ✅");
   };
 
   const handeleAddAnnonce = async () => {
     try {
+      // Vérification des champs obligatoires
+      if (
+        !commune.trim() ||
+        !quartier.trim() ||
+        !avenue.trim() ||
+        !description.trim() ||
+        !numTel.trim() ||
+        !chambres.trim() ||
+        images.length === 0
+      ) {
+        toast.error(
+          "Veuillez compléter tous les champs avant de publier l'annonce."
+        );
+        return;
+      }
+
       const numTelTrimmed = numTel.trim();
       const chambresNumber = parseInt(chambres, 10);
+
       if (isNaN(chambresNumber)) {
-        throw new Error("Le nombre de chambres doit être un nombre valide.");
+        toast.error("Le nombre de chambres doit être un nombre valide.");
+        return;
       }
+
       await addAnnonce({
         email: user?.primaryEmailAddress?.emailAddress as string,
         images,
@@ -40,12 +75,17 @@ const page = () => {
         nombreDeChambre: chambresNumber,
       });
 
+      toast.success("Annonce publiée avec succès ✅");
+
       const modal = document.getElementById("my_modal_3") as HTMLDialogElement;
       if (modal) {
         modal.close();
       }
     } catch (error) {
       console.error("Erreur lors de l'ajout de l'annonce :", error);
+      toast.error(
+        "Une erreur est survenue lors de la publication de l'annonce."
+      );
     }
   };
 
@@ -123,13 +163,28 @@ const page = () => {
               required
             />
             <div>
-              <UploadDropzone
+              <UploadButton
                 className="input input-bordered w-full mb-3"
                 endpoint="imageUploader"
                 onClientUploadComplete={(res) => {
                   handleUploadComplete(res);
                 }}
               />
+
+              {/* Aperçu des images uploadées */}
+              {images.length > 0 && (
+                <div className="flex flex-wrap gap-3 mt-3">
+                  {images.map((url, index) => (
+                    <div key={index} className="w-24 h-24 relative">
+                      <img
+                        src={url}
+                        alt={`aperçu-${index}`}
+                        className="w-full h-full object-cover rounded-md shadow"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <button className="btn bg-accent" onClick={handeleAddAnnonce}>

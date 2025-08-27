@@ -8,6 +8,7 @@ import {
   UserButton,
 } from "@clerk/nextjs";
 import "./globals.css";
+import { Toaster } from "react-hot-toast"; // 👈 import toaster
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,6 +37,7 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           {children}
+          <Toaster position="top-right" /> {/* 👈 notifications */}
         </body>
       </html>
     </ClerkProvider>

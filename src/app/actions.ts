@@ -54,7 +54,7 @@ export async function addAnnonce(input: AddAnnonceInput) {
     // Créer l'annonce dans la base
     const annonce = await prisma.annonce.create({
       data: {
-        images, // Prisma attend un String[]
+        images,
         description,
         commune,
         quartier,
