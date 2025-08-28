@@ -18,7 +18,7 @@ const annonceItem: React.FC<AnnonceItemProps> = ({ annonce }) => {
               <img
                 src={annonce.images[0]} // Affiche la première image de l'annonce
                 alt="Annonce Image"
-                className="w-full h-48 object-cover rounded-t-xl"
+                className="w-full h-full image-full object-cover rounded-t-xl"
               />
             </figure>
             <div className="card-body">

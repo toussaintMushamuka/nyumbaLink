@@ -242,7 +242,7 @@ const page = () => {
       </dialog>
       <ul className="grid md:grid-cols-3 gap-4 mt-4">
         {annonces.map((annonce) => (
-          <Link href={""} key={annonce.id}>
+          <Link href={`/manage/${annonce.id}`} key={annonce.id}>
             <AnnonceItem annonce={annonce}></AnnonceItem>
           </Link>
         ))}

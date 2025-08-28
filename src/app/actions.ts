@@ -89,3 +89,18 @@ export async function getAnnoncesByUser(email: string) {
     throw error;
   }
 }
+
+export async function getAnnonceByUserId(annonceId: string) {
+  try {
+    const annonce = await prisma.annonce.findUnique({
+      where: { id: annonceId },
+    });
+    if (!annonce) {
+      throw new Error("Annonce non trouvée");
+    }
+    return annonce;
+  } catch (error) {
+    console.error("Erreur lors de la récupération des annonces :", error);
+    throw error;
+  }
+}
