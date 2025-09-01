@@ -51,6 +51,21 @@ const UpdateAnnonceForm: React.FC<UpdateAnnonceFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validation côté client
+    if (
+      !description.trim() ||
+      !commune.trim() ||
+      !quartier.trim() ||
+      !avenue.trim() ||
+      !numTel.trim() ||
+      !nombreDeChambre ||
+      images.length === 0
+    ) {
+      toast.error("Tous les champs et au moins une image sont obligatoires ❌");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -76,7 +91,7 @@ const UpdateAnnonceForm: React.FC<UpdateAnnonceFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="w-full flex flex-col">
       <input
         className="input input-bordered w-full"
         value={commune}
@@ -113,8 +128,9 @@ const UpdateAnnonceForm: React.FC<UpdateAnnonceFormProps> = ({
         onChange={(e) => setNombreDeChambre(Number(e.target.value))}
         required
       />
-      <textarea
-        className="input input-bordered w-full h-24"
+      <input
+        type="text"
+        className="textarea textarea-bordered w-full h-24"
         value={description}
         placeholder="Description"
         onChange={(e) => setDescription(e.target.value)}
@@ -149,7 +165,7 @@ const UpdateAnnonceForm: React.FC<UpdateAnnonceFormProps> = ({
               />
               <button
                 type="button"
-                className="absolute top-0 right-0 text-white bg-red-500 rounded-full w-6 h-6 flex items-center justify-center"
+                className="absolute top-0 right-0 text-white  rounded-full w-6 h-6 flex items-center justify-center"
                 onClick={() => handleRemoveImage(index)}
               >
                 ✕

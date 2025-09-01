@@ -4,14 +4,13 @@ import Wrapper from "../components/Wrapper";
 import { useUser } from "@clerk/nextjs";
 import { addAnnonce, getAnnoncesByUser } from "../actions";
 import { UploadButton, UploadDropzone } from "@/lib/uploadthing";
-import { isReactCompilerRequired } from "next/dist/build/swc/generated-native";
 import { toast } from "react-hot-toast";
 import { Annonce } from "@/type";
 import Link from "next/link";
 import { Landmark } from "lucide-react";
 import AnnonceItem from "../components/annonceItem";
 
-const page = () => {
+const Page = () => {
   const { user } = useUser();
   const [commune, setCommune] = useState<string>("");
   const [quartier, setQuartier] = useState<string>("");
@@ -257,4 +256,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

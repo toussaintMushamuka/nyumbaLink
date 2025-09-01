@@ -10,7 +10,7 @@ import React, { useEffect, useState } from "react";
 const Page = ({ params }: { params: Promise<{ annonceId: string }> }) => {
   const [annonceId, setAnnonceId] = useState<string | null>(null);
   const [annonce, setAnnonce] = useState<Annonce>();
-  const [editing, setEditing] = useState(false); // état du popup
+  const [modalOpen, setModalOpen] = useState(false);
 
   async function fetchAnnonceData(annonceId: string) {
     try {
@@ -35,30 +35,28 @@ const Page = ({ params }: { params: Promise<{ annonceId: string }> }) => {
     getId();
   }, [params]);
 
-  // Callback après mise à jour
   const handleUpdated = (updatedAnnonce: Annonce) => {
     setAnnonce(updatedAnnonce);
-    setEditing(false); // fermer le popup
+    setModalOpen(false);
   };
 
   return (
     <Wrapper>
       {annonce ? (
         <div className="flex md:flex-row flex-col gap-4">
-          {/* Colonne gauche : Carte de l'annonce */}
+          {/* Colonne gauche : carte */}
           <div className="md:w-1/3">
             <AnnonceItemId annonce={annonce} />
-
             <button
               className="btn mt-4 w-full"
-              onClick={() => setEditing(true)}
+              onClick={() => setModalOpen(true)}
             >
               Modifier l'annonce
             </button>
           </div>
 
-          {/* Colonne droite : Tableau des détails */}
-          <div className="overflow-x-auto md:mt-0 mt-4 md:w-2/3">
+          {/* Colonne droite : tableau des détails */}
+          <div className="overflow-x-auto md:w-2/3 mt-4 md:mt-0">
             <div className="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
               <table className="table w-full">
                 <thead>
@@ -87,29 +85,28 @@ const Page = ({ params }: { params: Promise<{ annonceId: string }> }) => {
             </div>
           </div>
 
-          {/* Popup modal DaisyUI */}
-          {editing && annonce && (
-            <dialog id="update-modal" className="modal modal-open">
-              <form
-                method="dialog"
-                className="modal-box w-full max-w-3xl relative p-6"
-              >
-                {/* Bouton de fermeture */}
+          {/* Modal DaisyUI */}
+          {modalOpen && (
+            <dialog className="modal modal-open">
+              <div className="modal-box w-full max-w-4xl relative">
+                {/* Bouton fermeture */}
                 <button
                   className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-                  onClick={() => setEditing(false)}
+                  onClick={() => setModalOpen(false)}
                 >
                   ✕
                 </button>
 
-                <h3 className="font-bold text-lg mb-4">Modifier l'annonce</h3>
+                <h3 className="font-bold text-xl mb-4">Modifier l'annonce</h3>
 
-                {/* Formulaire de modification */}
-                <UpdateAnnonceForm
-                  annonce={annonce}
-                  onUpdated={handleUpdated}
-                />
-              </form>
+                {/* Formulaire de mise à jour */}
+                {annonce && (
+                  <UpdateAnnonceForm
+                    annonce={annonce}
+                    onUpdated={handleUpdated}
+                  />
+                )}
+              </div>
             </dialog>
           )}
         </div>
