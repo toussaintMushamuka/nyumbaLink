@@ -105,3 +105,66 @@ export async function getAnnonceById(annonceId: string) {
     throw error;
   }
 }
+
+export async function deleteAnnonceById(annonceId: string) {
+  try {
+    await prisma.annonce.delete({
+      where: { id: annonceId },
+    });
+  } catch (error) {
+    console.error("Erreur lors de la suppression de l'annonce :", error);
+    throw error;
+  }
+}
+
+interface UpdateAnnonceInput {
+  id: string; // ID de l'annonce à mettre à jour
+  images?: string[];
+  description?: string;
+  commune?: string;
+  quartier?: string;
+  avenue?: string;
+  numTel?: string;
+  nombreDeChambre?: number;
+}
+
+export async function updateAnnonceById(input: UpdateAnnonceInput) {
+  const {
+    id,
+    images,
+    description,
+    commune,
+    quartier,
+    avenue,
+    numTel,
+    nombreDeChambre,
+  } = input;
+
+  try {
+    // Vérifier que l'annonce existe
+    const existingAnnonce = await prisma.annonce.findUnique({ where: { id } });
+    if (!existingAnnonce) {
+      throw new Error("Annonce non trouvée");
+    }
+
+    // Mettre à jour l'annonce
+    const updatedAnnonce = await prisma.annonce.update({
+      where: { id },
+      data: {
+        images: images ?? existingAnnonce.images,
+        description: description ?? existingAnnonce.description,
+        commune: commune ?? existingAnnonce.commune,
+        quartier: quartier ?? existingAnnonce.quartier,
+        avenue: avenue ?? existingAnnonce.avenue,
+        numTel: numTel ?? existingAnnonce.numTel,
+        nombreDeChambre: nombreDeChambre ?? existingAnnonce.nombreDeChambre,
+      },
+      include: { user: true },
+    });
+    console.log("Annonce mise à jour avec succès :", updatedAnnonce);
+    return updatedAnnonce;
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour de l'annonce :", error);
+    throw error;
+  }
+}

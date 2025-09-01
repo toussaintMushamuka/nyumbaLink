@@ -1,13 +1,16 @@
 "use client";
+
 import { getAnnonceById } from "@/app/actions";
 import AnnonceItemId from "@/app/components/AnnonceItemId";
+import UpdateAnnonceForm from "@/app/components/UpdateAnnonceForm";
 import Wrapper from "@/app/components/Wrapper";
 import { Annonce } from "@/type";
 import React, { useEffect, useState } from "react";
 
-const page = ({ params }: { params: Promise<{ annonceId: string }> }) => {
+const Page = ({ params }: { params: Promise<{ annonceId: string }> }) => {
   const [annonceId, setAnnonceId] = useState<string | null>(null);
   const [annonce, setAnnonce] = useState<Annonce>();
+  const [editing, setEditing] = useState(false); // état du popup
 
   async function fetchAnnonceData(annonceId: string) {
     try {
@@ -22,6 +25,7 @@ const page = ({ params }: { params: Promise<{ annonceId: string }> }) => {
       );
     }
   }
+
   useEffect(() => {
     const getId = async () => {
       const resolvedParams = await params;
@@ -31,18 +35,32 @@ const page = ({ params }: { params: Promise<{ annonceId: string }> }) => {
     getId();
   }, [params]);
 
+  // Callback après mise à jour
+  const handleUpdated = (updatedAnnonce: Annonce) => {
+    setAnnonce(updatedAnnonce);
+    setEditing(false); // fermer le popup
+  };
+
   return (
     <Wrapper>
-      {annonce && (
-        <div className="flex md:flex-row flex-col">
+      {annonce ? (
+        <div className="flex md:flex-row flex-col gap-4">
+          {/* Colonne gauche : Carte de l'annonce */}
           <div className="md:w-1/3">
             <AnnonceItemId annonce={annonce} />
-            <button className="btn mt-4">Modifier annonce l'annonce</button>
+
+            <button
+              className="btn mt-4 w-full"
+              onClick={() => setEditing(true)}
+            >
+              Modifier l'annonce
+            </button>
           </div>
-          <div className="ovverflow-x-auto md:mt-0 mt-4 md:w-2/3 ml-4">
+
+          {/* Colonne droite : Tableau des détails */}
+          <div className="overflow-x-auto md:mt-0 mt-4 md:w-2/3">
             <div className="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
-              <table className="table">
-                {/* head */}
+              <table className="table w-full">
                 <thead>
                   <tr>
                     <th>Commune</th>
@@ -51,11 +69,10 @@ const page = ({ params }: { params: Promise<{ annonceId: string }> }) => {
                     <th>NumTél</th>
                     <th>Chambres</th>
                     <th>Description</th>
-                    <th>Disponnible</th>
+                    <th>Disponible</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {/* row 1 */}
                   <tr>
                     <td>{annonce.commune}</td>
                     <td>{annonce.quartier}</td>
@@ -69,10 +86,40 @@ const page = ({ params }: { params: Promise<{ annonceId: string }> }) => {
               </table>
             </div>
           </div>
+
+          {/* Popup modal DaisyUI */}
+          {editing && annonce && (
+            <dialog id="update-modal" className="modal modal-open">
+              <form
+                method="dialog"
+                className="modal-box w-full max-w-3xl relative p-6"
+              >
+                {/* Bouton de fermeture */}
+                <button
+                  className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                  onClick={() => setEditing(false)}
+                >
+                  ✕
+                </button>
+
+                <h3 className="font-bold text-lg mb-4">Modifier l'annonce</h3>
+
+                {/* Formulaire de modification */}
+                <UpdateAnnonceForm
+                  annonce={annonce}
+                  onUpdated={handleUpdated}
+                />
+              </form>
+            </dialog>
+          )}
         </div>
+      ) : (
+        <p className="text-center text-gray-500 mt-10">
+          Chargement de l'annonce...
+        </p>
       )}
     </Wrapper>
   );
 };
 
-export default page;
+export default Page;
