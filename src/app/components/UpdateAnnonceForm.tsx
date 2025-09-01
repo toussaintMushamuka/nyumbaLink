@@ -5,6 +5,7 @@ import { updateAnnonceById } from "@/app/actions";
 import { Annonce } from "@/type";
 import { UploadButton } from "@/lib/uploadthing";
 import { toast } from "react-hot-toast";
+import Image from "next/image";
 
 interface UpdateAnnonceFormProps {
   annonce: Annonce;
@@ -158,7 +159,7 @@ const UpdateAnnonceForm: React.FC<UpdateAnnonceFormProps> = ({
         <div className="flex flex-wrap gap-3 mt-3">
           {images.map((url, index) => (
             <div key={index} className="w-24 h-24 relative">
-              <img
+              <Image
                 src={url}
                 alt={`Image ${index + 1}`}
                 className="w-full h-full object-cover rounded-md shadow"

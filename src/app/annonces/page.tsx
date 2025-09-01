@@ -9,6 +9,7 @@ import { Annonce } from "@/type";
 import Link from "next/link";
 import { Landmark } from "lucide-react";
 import AnnonceItem from "../components/annonceItem";
+import Image from "next/image";
 
 const Page = () => {
   const { user } = useUser();
@@ -222,7 +223,7 @@ const Page = () => {
                 <div className="flex flex-wrap gap-3 mt-3">
                   {images.map((url, index) => (
                     <div key={index} className="w-24 h-24 relative">
-                      <img
+                      <Image
                         src={url}
                         alt={`aperçu-${index}`}
                         className="w-full h-full object-cover rounded-md shadow"

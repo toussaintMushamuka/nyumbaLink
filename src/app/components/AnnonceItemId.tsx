@@ -1,6 +1,7 @@
 import { Annonce } from "@/type";
 import React, { useState } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import Image from "next/image";
 
 interface AnnonceItemIdProps {
   annonce: Annonce;
@@ -42,7 +43,7 @@ const AnnonceItemId: React.FC<AnnonceItemIdProps> = ({ annonce }) => {
                 }}
               >
                 {annonce.images.map((img, idx) => (
-                  <img
+                  <Image
                     key={idx}
                     src={img}
                     alt={`Image ${idx + 1}`}
@@ -125,7 +126,7 @@ const AnnonceItemId: React.FC<AnnonceItemIdProps> = ({ annonce }) => {
               }}
             >
               {annonce.images.map((img, idx) => (
-                <img
+                <Image
                   key={idx}
                   src={img}
                   alt={`Image ${idx + 1}`}

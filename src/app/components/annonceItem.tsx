@@ -1,4 +1,5 @@
 import { Annonce } from "@/type";
+import Image from "next/image";
 import React from "react";
 
 interface AnnonceItemProps {
@@ -15,8 +16,12 @@ const annonceItem: React.FC<AnnonceItemProps> = ({ annonce }) => {
         <div className="flex items-center justify-between">
           <div className="card bg-base-100 w-full">
             <figure>
-              <img
-                src={annonce.images[0]} // Affiche la première image de l'annonce
+              <Image
+                src={
+                  annonce.images && annonce.images.length > 0
+                    ? annonce.images[0]
+                    : "/placeholder.png"
+                } // Affiche la première image de l'annonce
                 alt="Annonce Image"
                 className="w-full h-full image-full object-cover rounded-t-xl"
               />
