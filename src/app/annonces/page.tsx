@@ -6,10 +6,10 @@ import { addAnnonce, getAnnoncesByUser } from "../actions";
 import { UploadButton, UploadDropzone } from "@/lib/uploadthing";
 import { isReactCompilerRequired } from "next/dist/build/swc/generated-native";
 import { toast } from "react-hot-toast";
-import { annonce } from "@/type";
+import { Annonce } from "@/type";
 import Link from "next/link";
-import AnnonceItem from "../components/annonceItem";
 import { Landmark } from "lucide-react";
+import AnnonceItem from "../components/annonceItem";
 
 const page = () => {
   const { user } = useUser();
@@ -20,7 +20,7 @@ const page = () => {
   const [numTel, setNumTel] = useState<string>("");
   const [chambres, setChambres] = useState<string>("");
   const [images, setImages] = useState<string[]>([]); // tableau d'URLs
-  const [annonces, setAnnonces] = useState<annonce[]>([]);
+  const [annonces, setAnnonces] = useState<Annonce[]>([]);
 
   const handleUploadComplete = (res: any) => {
     if (!res || res.length === 0) {
@@ -240,13 +240,19 @@ const page = () => {
           </div>
         </div>
       </dialog>
-      <ul className="grid md:grid-cols-3 gap-4 mt-4">
-        {annonces.map((annonce) => (
-          <Link href={`/manage/${annonce.id}`} key={annonce.id}>
-            <AnnonceItem annonce={annonce}></AnnonceItem>
-          </Link>
-        ))}
-      </ul>
+      {annonces.length === 0 ? (
+        <p className="text-center text-gray-500 mt-10">
+          Vous n'avez pas encore publié d'annonces.
+        </p>
+      ) : (
+        <ul className="grid md:grid-cols-3 gap-4 mt-4">
+          {annonces.map((annonce) => (
+            <Link href={`/manage/${annonce.id}`} key={annonce.id}>
+              <AnnonceItem annonce={annonce}></AnnonceItem>
+            </Link>
+          ))}
+        </ul>
+      )}
     </Wrapper>
   );
 };

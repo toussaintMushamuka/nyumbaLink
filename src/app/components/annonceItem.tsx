@@ -1,8 +1,8 @@
-import { annonce } from "@/type";
+import { Annonce } from "@/type";
 import React from "react";
 
 interface AnnonceItemProps {
-  annonce: annonce;
+  annonce: Annonce;
 }
 
 const annonceItem: React.FC<AnnonceItemProps> = ({ annonce }) => {

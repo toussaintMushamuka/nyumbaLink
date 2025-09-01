@@ -1,19 +1,20 @@
-export interface annonce {
-  id: number;
-  images: string[]; // tableau d'URLs d'images
+export interface Annonce {
+  id: string;
+  images: string[];
   description: string;
   commune: string;
   quartier: string;
   avenue: string;
   numTel: string;
   nombreDeChambre: number;
-  userId: number;
+  userId: string;
   createdAt: Date;
   updatedAt: Date;
   user: {
-    id: number;
+    id: string;
     email: string;
+    name?: string | null;
+    phone?: string | null;
     createdAt: Date;
-    updatedAt: Date;
   };
 }

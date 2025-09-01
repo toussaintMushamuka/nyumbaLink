@@ -90,10 +90,11 @@ export async function getAnnoncesByUser(email: string) {
   }
 }
 
-export async function getAnnonceByUserId(annonceId: string) {
+export async function getAnnonceById(annonceId: string) {
   try {
     const annonce = await prisma.annonce.findUnique({
       where: { id: annonceId },
+      include: { user: true },
     });
     if (!annonce) {
       throw new Error("Annonce non trouvée");
