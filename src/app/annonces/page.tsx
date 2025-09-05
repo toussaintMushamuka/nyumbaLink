@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import Wrapper from "../components/Wrapper";
 import { useUser } from "@clerk/nextjs";
 import { addAnnonce, getAnnoncesByUser } from "../actions";
-import { UploadButton, UploadDropzone } from "@/lib/uploadthing";
+import { UploadButton } from "@/lib/uploadthing";
 import { toast } from "react-hot-toast";
 import { Annonce } from "@/type";
 import Link from "next/link";
@@ -19,8 +19,9 @@ const Page = () => {
   const [description, setDescription] = useState<string>("");
   const [numTel, setNumTel] = useState<string>("");
   const [chambres, setChambres] = useState<string>("");
-  const [images, setImages] = useState<string[]>([]); // tableau d'URLs
+  const [images, setImages] = useState<string[]>([]);
   const [annonces, setAnnonces] = useState<Annonce[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const handleUploadComplete = (res: any) => {
     if (!res || res.length === 0) {
@@ -28,13 +29,11 @@ const Page = () => {
       return;
     }
 
-    // Vérifie la structure et utilise res[0].url
     const urls = res
       .map((file: { url?: string }) => file.url)
       .filter((url: any): url is string => !!url);
 
     if (urls.length === 0) {
-      console.log("Résultat brut UploadThing :", res); // 👀 pour vérifier
       toast.error("Aucune image valide trouvée.");
       return;
     }
@@ -43,203 +42,222 @@ const Page = () => {
     toast.success("Image(s) uploadée(s) avec succès ✅");
   };
 
-  const handeleAddAnnonce = async () => {
+  const fetchAnnonces = async () => {
+    if (!user?.primaryEmailAddress?.emailAddress) return;
+
     try {
-      // Vérification des champs obligatoires
-      if (
-        !commune.trim() ||
-        !quartier.trim() ||
-        !avenue.trim() ||
-        !description.trim() ||
-        !numTel.trim() ||
-        !chambres.trim() ||
-        images.length === 0
-      ) {
-        toast.error(
-          "Veuillez compléter tous les champs avant de publier l'annonce."
-        );
-        return;
-      }
+      const userAnnonces = await getAnnoncesByUser(
+        user.primaryEmailAddress.emailAddress
+      );
+      const annoncesWithUser = userAnnonces.map((annonce: any) => ({
+        ...annonce,
+        user: annonce.user ?? null,
+      }));
+      setAnnonces(annoncesWithUser);
+    } catch (error) {
+      toast.error("Erreur lors de la récupération des annonces.");
+      console.error(error);
+    }
+  };
 
-      const numTelTrimmed = numTel.trim();
-      const chambresNumber = parseInt(chambres, 10);
+  useEffect(() => {
+    fetchAnnonces();
+  }, [user?.primaryEmailAddress?.emailAddress]);
 
-      if (isNaN(chambresNumber)) {
-        toast.error("Le nombre de chambres doit être un nombre valide.");
-        return;
-      }
+  const handleAddAnnonce = async (e: React.FormEvent) => {
+    e.preventDefault();
 
+    if (
+      !commune.trim() ||
+      !quartier.trim() ||
+      !avenue.trim() ||
+      !description.trim() ||
+      !numTel.trim() ||
+      !chambres.trim() ||
+      images.length === 0
+    ) {
+      toast.error("Veuillez compléter tous les champs avant de publier.");
+      return;
+    }
+
+    const chambresNumber = parseInt(chambres, 10);
+    if (isNaN(chambresNumber)) {
+      toast.error("Le nombre de chambres doit être un nombre valide.");
+      return;
+    }
+
+    if (!user?.primaryEmailAddress?.emailAddress) {
+      toast.error("Utilisateur non authentifié.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
       await addAnnonce({
-        email: user?.primaryEmailAddress?.emailAddress as string,
+        email: user.primaryEmailAddress.emailAddress,
         images,
         description,
         commune,
         quartier,
         avenue,
-        numTel: numTelTrimmed,
+        numTel,
         nombreDeChambre: chambresNumber,
       });
-      fetchAnnonces(); // Rafraîchir la liste des annonces après l'ajout
 
       toast.success("Annonce publiée avec succès ✅");
-      setAvenue("");
-      setChambres("");
+      // Réinitialiser le formulaire
       setCommune("");
+      setQuartier("");
+      setAvenue("");
       setDescription("");
       setNumTel("");
-      setQuartier("");
+      setChambres("");
       setImages([]);
-      // Fermer la modal après soumission
 
+      fetchAnnonces();
+
+      // Fermer la modal
       const modal = document.getElementById("my_modal_3") as HTMLDialogElement;
-      if (modal) {
-        modal.close();
-      }
+      modal?.close();
     } catch (error) {
-      console.error("Erreur lors de l'ajout de l'annonce :", error);
-      toast.error(
-        "Une erreur est survenue lors de la publication de l'annonce."
-      );
+      console.error(error);
+      toast.error("Une erreur est survenue lors de la publication.");
+    } finally {
+      setLoading(false);
     }
   };
-
-  const fetchAnnonces = async () => {
-    if (user?.primaryEmailAddress?.emailAddress) {
-      try {
-        const userAnnonces = await getAnnoncesByUser(
-          user?.primaryEmailAddress?.emailAddress
-        );
-        // Ajoute la propriété 'user' attendue par le type 'annonce'
-        const annoncesWithUser = userAnnonces.map((annonce: any) => ({
-          ...annonce,
-          user: annonce.user ?? null, // ou fournir un objet utilisateur par défaut si nécessaire
-        }));
-        setAnnonces(annoncesWithUser);
-      } catch (error) {
-        toast.error("Erreur lors de la récupération des annonces.");
-        return;
-      }
-    }
-  };
-  useEffect(() => {
-    fetchAnnonces();
-  }, [user?.primaryEmailAddress?.emailAddress]);
 
   return (
     <Wrapper>
       <button
-        className="btn"
+        className="btn flex items-center gap-2"
         onClick={() =>
           (
             document.getElementById("my_modal_3") as HTMLDialogElement
-          ).showModal()
+          )?.showModal()
         }
       >
         Ajouter une annonce
-        <Landmark className="w-4" />
+        <Landmark className="w-4 h-4" />
       </button>
+
+      {/* Modal */}
       <dialog id="my_modal_3" className="modal">
-        <div className="modal-box">
-          <form method="dialog">
-            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
-              ✕
-            </button>
-          </form>
+        <div className="modal-box relative">
+          <button
+            className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+            onClick={() => {
+              const modal = document.getElementById(
+                "my_modal_3"
+              ) as HTMLDialogElement;
+              modal?.close();
+            }}
+          >
+            ✕
+          </button>
           <h3 className="font-bold text-lg">Ajouter une maison à louer</h3>
           <p className="py-4 text-center">
-            {" "}
-            Trouver rapidement un locataire en publiant votre annonce ici.
+            Trouvez rapidement un locataire en publiant votre annonce ici.
           </p>
-          <div className="w-full flex flex-col">
+
+          <form
+            className="w-full flex flex-col gap-3"
+            onSubmit={handleAddAnnonce}
+          >
             <input
-              className="input input-bordered w-full mb-3"
+              className="input input-bordered w-full"
               type="text"
               value={commune}
-              placeholder="enter la commune ex: Kadutu"
+              placeholder="Commune ex: Kadutu"
               onChange={(e) => setCommune(e.target.value)}
               required
             />
             <input
-              className="input input-bordered w-full mb-3"
+              className="input input-bordered w-full"
               type="text"
               value={quartier}
-              placeholder="enter le quartier ex: Nyamugo"
+              placeholder="Quartier ex: Nyamugo"
               onChange={(e) => setQuartier(e.target.value)}
               required
             />
             <input
-              className="input input-bordered w-full mb-3"
+              className="input input-bordered w-full"
               type="text"
               value={avenue}
-              placeholder="enter l'avenue ex: avenue du commerce"
+              placeholder="Avenue ex: avenue du commerce"
               onChange={(e) => setAvenue(e.target.value)}
               required
             />
             <input
-              className="input input-bordered w-full mb-3"
+              className="textarea textarea-bordered w-full h-24"
               type="text"
               value={description}
-              placeholder="enter une description"
+              placeholder="Description"
               onChange={(e) => setDescription(e.target.value)}
               required
             />
             <input
-              className="input input-bordered w-full mb-3"
+              className="input input-bordered w-full"
               type="text"
               value={numTel}
-              placeholder="enter le numero de telephone"
+              placeholder="Numéro de téléphone"
               onChange={(e) => setNumTel(e.target.value)}
               required
             />
             <input
-              className="input input-bordered w-full mb-3"
+              className="input input-bordered w-full"
               type="number"
               value={chambres}
-              placeholder="enter le nombre de chambres"
+              placeholder="Nombre de chambres"
               onChange={(e) => setChambres(e.target.value)}
               required
             />
-            <div>
-              <UploadButton
-                className=" w-full "
-                endpoint="imageUploader"
-                onClientUploadComplete={(res) => {
-                  handleUploadComplete(res);
-                }}
-                content={{
-                  button: "Choisir une image", // texte du bouton
-                  allowedContent:
-                    "Tu ne peux ajouter que 3 images avec une taille maximale de (max 4MB)", // texte sous le bouton
-                }}
-                appearance={{
-                  button: "btn btn-accent bg-accent mt-2 w-full", // applique daisyUI ou tailwind
-                  container: "flex flex-col gap-2",
-                  allowedContent: "text-sm text-gray-500",
-                }}
-              />
 
-              {/* Aperçu des images uploadées */}
-              {images.length > 0 && (
-                <div className="flex flex-wrap gap-3 mt-3">
-                  {images.map((url, index) => (
-                    <div key={index} className="w-24 h-24 relative">
-                      <Image
-                        src={url}
-                        alt={`aperçu-${index}`}
-                        className="w-full h-full object-cover rounded-md shadow"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            {/* Upload images */}
+            <UploadButton
+              className="w-full"
+              endpoint="imageUploader"
+              onClientUploadComplete={handleUploadComplete}
+              content={{
+                button: "Choisir des images",
+                allowedContent:
+                  "Tu peux ajouter jusqu'à 3 images (max 4MB chacune)",
+              }}
+              appearance={{
+                button: "btn btn-accent mt-2 w-full",
+                container: "flex flex-col gap-2",
+                allowedContent: "text-sm text-gray-500",
+              }}
+            />
 
-            <button className="btn mt-4" onClick={handeleAddAnnonce}>
-              Publier l'annonce
+            {images.length > 0 && (
+              <div className="flex flex-wrap gap-3 mt-3">
+                {images.map((url, index) => (
+                  <div key={index} className="w-24 h-24 relative">
+                    <Image
+                      src={url}
+                      alt={`aperçu-${index}`}
+                      fill
+                      className="object-cover rounded-md shadow"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="btn btn-accent mt-4"
+              disabled={loading}
+            >
+              {loading ? "Publication..." : "Publier l'annonce"}
             </button>
-          </div>
+          </form>
         </div>
       </dialog>
+
+      {/* Liste des annonces */}
       {annonces.length === 0 ? (
         <p className="text-center text-gray-500 mt-10">
           Vous n'avez pas encore publié d'annonces.
@@ -248,7 +266,7 @@ const Page = () => {
         <ul className="grid md:grid-cols-3 gap-4 mt-4">
           {annonces.map((annonce) => (
             <Link href={`/manage/${annonce.id}`} key={annonce.id}>
-              <AnnonceItem annonce={annonce}></AnnonceItem>
+              <AnnonceItem annonce={annonce} />
             </Link>
           ))}
         </ul>
