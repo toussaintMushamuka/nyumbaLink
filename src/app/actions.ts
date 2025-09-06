@@ -168,3 +168,17 @@ export async function updateAnnonceById(input: UpdateAnnonceInput) {
     throw error;
   }
 }
+
+//fonction pour recuperer toutes les annonces
+export async function getAllAnnonces() {
+  try {
+    const annonces = await prisma.annonce.findMany({
+      include: { user: true },
+      orderBy: { createdAt: "desc" },
+    });
+    return annonces;
+  } catch (error) {
+    console.error("Erreur lors de la récupération des annonces :", error);
+    throw error;
+  }
+}

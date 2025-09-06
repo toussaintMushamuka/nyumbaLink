@@ -163,6 +163,7 @@ const UpdateAnnonceForm: React.FC<UpdateAnnonceFormProps> = ({
                 src={url}
                 alt={`Image ${index + 1}`}
                 className="w-full h-full object-cover rounded-md shadow"
+                fill
               />
               <button
                 type="button"
