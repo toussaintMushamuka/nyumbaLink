@@ -1,83 +1,95 @@
-import Image from "next/image";
-import Link from "next/link";
-import Navbar from "./components/Navbar";
-import { getAllAnnonces } from "./actions";
-import { Annonce } from "@/type";
+"use client";
 
-export default async function Home() {
-  // Appel côté serveur (RSC) → pas besoin de useEffect
-  const annonces: Annonce[] = await getAllAnnonces();
+import React, { useState, useEffect } from "react";
+import Navbar from "./components/Navbar";
+import GetAnnonceItem from "./components/GetAnnonceItem";
+import { Annonce } from "@/type";
+import { getAllAnnonces } from "./actions";
+import Footer from "./components/Footer";
+
+export default function Home() {
+  const [search, setSearch] = useState("");
+  const [annonces, setAnnonces] = useState<Annonce[]>([]);
+  const [filtered, setFiltered] = useState<Annonce[]>([]);
+  const [loading, setLoading] = useState(true); // ✅ état de chargement
+
+  // Charger les annonces au montage
+  useEffect(() => {
+    async function fetchAnnonces() {
+      try {
+        const data = await getAllAnnonces();
+        setAnnonces(data);
+        setFiltered(data);
+      } catch (error) {
+        console.error("Erreur lors du chargement des annonces", error);
+      } finally {
+        setLoading(false); // ✅ après le chargement (succès ou erreur)
+      }
+    }
+    fetchAnnonces();
+  }, []);
+
+  // Filtrage en temps réel
+  useEffect(() => {
+    const lower = search.toLowerCase();
+    const results = annonces.filter(
+      (annonce) =>
+        annonce.commune.toLowerCase().includes(lower) ||
+        annonce.quartier.toLowerCase().includes(lower) ||
+        annonce.avenue.toLowerCase().includes(lower) ||
+        annonce.description.toLowerCase().includes(lower)
+    );
+    setFiltered(results);
+  }, [search, annonces]);
 
   return (
     <div>
       <Navbar />
       <div className="flex items-center justify-center flex-col py-10 w-full">
-        <div className="flex flex-col">
-          <h1 className="text-4xl md:text-5xl font-bold text-center">
-            Le carrefour des logements
-          </h1>
-          <p className="py-6 text-gray-800 text-center">
-            Bienvenue sur{" "}
-            <span className="text-primary font-bold">NyumbaLink</span>,
-            <br />
-            votre plateforme de recherche de logements.
-          </p>
-          <div className="flex items-center justify-center">
-            <label className="input">
-              <svg
-                className="h-[1em] opacity-50"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2.5}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx={11} cy={11} r={8}></circle>
-                <path d="m21 21-4.3-4.3"></path>
-              </svg>
-              <input type="search" placeholder="Chercher" />
-            </label>
-          </div>
+        <h1 className="text-4xl md:text-5xl font-bold text-center">
+          Le carrefour des logements
+        </h1>
+        <p className="py-6 text-gray-800 text-center">
+          Bienvenue sur{" "}
+          <span className="text-primary font-bold">NyumbaLink</span>
+        </p>
+
+        {/* Barre de recherche */}
+        <div className="flex items-center justify-center">
+          <label className="input">
+            <input
+              type="search"
+              placeholder="Chercher (commune, quartier...)"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="p-2 rounded-lg border w-80"
+            />
+          </label>
         </div>
 
-        {/* Liste des annonces */}
-        <ul className="grid md:grid-cols-3 gap-4 mt-10 w-full px-6">
-          {annonces.length === 0 ? (
-            <p className="text-center text-gray-500 col-span-3">
-              Aucune annonce disponible pour le moment.
-            </p>
-          ) : (
-            annonces.map((annonce) => (
-              <li
-                key={annonce.id}
-                className="card bg-base-100 shadow-md p-4 rounded-lg"
-              >
-                {annonce.images && annonce.images[0] && (
-                  <div className="relative w-full h-48 mb-3">
-                    <Image
-                      src={annonce.images[0]}
-                      alt="Image annonce"
-                      fill
-                      className="object-cover rounded-md"
-                    />
-                  </div>
+        {/* Liste des annonces filtrées */}
+        <div>
+          <div className="px-5 md:px-[10%] mt-10 mb-10">
+            {loading ? ( // ✅ si en cours de chargement
+              <p className="text-gray-500 text-center">
+                Chargement des annonces...
+              </p>
+            ) : (
+              <ul className="grid md:grid-cols-3 gap-4 mt-6">
+                {filtered.length > 0 ? (
+                  filtered.map((annonce) => (
+                    <GetAnnonceItem key={annonce.id} annonce={annonce} />
+                  ))
+                ) : (
+                  <p className="text-gray-500 mt-4">Aucune annonce trouvée</p>
                 )}
-                <h2 className="font-bold text-lg">{annonce.commune}</h2>
-                <p className="text-sm text-gray-600">{annonce.quartier}</p>
-                <p className="mt-2">{annonce.description}</p>
-                <Link
-                  href={`/annonce/${annonce.id}`}
-                  className="btn btn-primary mt-4 w-full"
-                >
-                  Voir plus
-                </Link>
-              </li>
-            ))
-          )}
-        </ul>
+              </ul>
+            )}
+          </div>
+        </div>
       </div>
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }

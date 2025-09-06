@@ -4,12 +4,13 @@ import { Annonce } from "@/type";
 import React, { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
-interface AnnonceItemIdProps {
+interface GetAnnonceItemProps {
   annonce: Annonce;
 }
 
-const AnnonceItemId: React.FC<AnnonceItemIdProps> = ({ annonce }) => {
+const GetAnnonceItem: React.FC<GetAnnonceItemProps> = ({ annonce }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -92,18 +93,30 @@ const AnnonceItemId: React.FC<AnnonceItemIdProps> = ({ annonce }) => {
 
         {/* Contenu de l'annonce */}
         <div className="card-body">
+          <div className="flex justify-between  items-center">
+            <h2 className="card-title">{annonce.commune}</h2>
+            <div className="text-sm bg-accent rounded-md text-white p-2">
+              Disponible
+            </div>
+          </div>
           <h2 className="card-title">
-            {annonce.commune} - {annonce.quartier}
+            {annonce.quartier} - {annonce.avenue}
           </h2>
           <p className="text-gray-500 text-sm">
             {annonce.description.length > 100
               ? annonce.description.substring(0, 100) + "..."
               : annonce.description}
           </p>
-          <div className="card-actions justify-end">
-            <button className="btn btn-accent">Disponible</button>
-            <button className="btn">Indisponible</button>
-          </div>
+          <p className="text-gray-500 text-sm">Téléphone: {annonce.numTel}</p>
+          <Link
+            className="card-actions"
+            href={`https://wa.me/${annonce.numTel}?text=Bonjour, je suis intéressé par votre annonce sur NyumbaLink`}
+            target="_blank"
+          >
+            <button className="btn  bg-lime-500 text-white font-bold justify-end">
+              WhatsApp
+            </button>
+          </Link>
         </div>
       </div>
 
@@ -157,4 +170,4 @@ const AnnonceItemId: React.FC<AnnonceItemIdProps> = ({ annonce }) => {
   );
 };
 
-export default AnnonceItemId;
+export default GetAnnonceItem;

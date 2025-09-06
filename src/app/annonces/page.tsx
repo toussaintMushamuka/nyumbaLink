@@ -22,29 +22,37 @@ const Page = () => {
   const [images, setImages] = useState<string[]>([]);
   const [annonces, setAnnonces] = useState<Annonce[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingAnnonces, setLoadingAnnonces] = useState(true);
+  const [uploading, setUploading] = useState(false); // ✅ état upload
 
-  const handleUploadComplete = (res: any) => {
-    if (!res || res.length === 0) {
-      toast.error("L'upload a échoué, veuillez réessayer.");
-      return;
+  const handleUploadComplete = async (res: any) => {
+    setUploading(true); // ✅ commence l'upload
+    try {
+      if (!res || res.length === 0) {
+        toast.error("L'upload a échoué, veuillez réessayer.");
+        return;
+      }
+
+      const urls = res
+        .map((file: { url?: string }) => file.url)
+        .filter((url: any): url is string => !!url);
+
+      if (urls.length === 0) {
+        toast.error("Aucune image valide trouvée.");
+        return;
+      }
+
+      setImages(urls);
+      toast.success("Image(s) uploadée(s) avec succès ✅");
+    } finally {
+      setUploading(false); // ✅ fin de l'upload
     }
-
-    const urls = res
-      .map((file: { url?: string }) => file.url)
-      .filter((url: any): url is string => !!url);
-
-    if (urls.length === 0) {
-      toast.error("Aucune image valide trouvée.");
-      return;
-    }
-
-    setImages(urls);
-    toast.success("Image(s) uploadée(s) avec succès ✅");
   };
 
   const fetchAnnonces = async () => {
     if (!user?.primaryEmailAddress?.emailAddress) return;
 
+    setLoadingAnnonces(true);
     try {
       const userAnnonces = await getAnnoncesByUser(
         user.primaryEmailAddress.emailAddress
@@ -57,6 +65,8 @@ const Page = () => {
     } catch (error) {
       toast.error("Erreur lors de la récupération des annonces.");
       console.error(error);
+    } finally {
+      setLoadingAnnonces(false);
     }
   };
 
@@ -106,6 +116,7 @@ const Page = () => {
       });
 
       toast.success("Annonce publiée avec succès ✅");
+
       // Réinitialiser le formulaire
       setCommune("");
       setQuartier("");
@@ -127,6 +138,18 @@ const Page = () => {
       setLoading(false);
     }
   };
+
+  // ✅ Calcul du formulaire valide
+  const isFormValid =
+    commune.trim() &&
+    quartier.trim() &&
+    avenue.trim() &&
+    description.trim() &&
+    numTel.trim() &&
+    chambres.trim() &&
+    images.length > 0 &&
+    !loading &&
+    !uploading;
 
   return (
     <Wrapper>
@@ -249,16 +272,22 @@ const Page = () => {
             <button
               type="submit"
               className="btn btn-accent mt-4"
-              disabled={loading}
+              disabled={!isFormValid} // ✅ bouton désactivé si formulaire incomplet ou upload en cours
             >
-              {loading ? "Publication..." : "Publier l'annonce"}
+              {loading
+                ? "Publication..."
+                : uploading
+                ? "Upload en cours..."
+                : "Publier l'annonce"}
             </button>
           </form>
         </div>
       </dialog>
 
       {/* Liste des annonces */}
-      {annonces.length === 0 ? (
+      {loadingAnnonces ? (
+        <p className="text-center text-gray-500 mt-10">Chargement...</p>
+      ) : annonces.length === 0 ? (
         <p className="text-center text-gray-500 mt-10">
           Vous n'avez pas encore publié d'annonces.
         </p>

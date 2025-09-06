@@ -170,13 +170,18 @@ export async function updateAnnonceById(input: UpdateAnnonceInput) {
 }
 
 //fonction pour recuperer toutes les annonces
+
+// Fonction pour récupérer toutes les annonces dans un ordre aléatoire
 export async function getAllAnnonces() {
   try {
     const annonces = await prisma.annonce.findMany({
       include: { user: true },
-      orderBy: { createdAt: "desc" },
     });
-    return annonces;
+
+    // Mélange aléatoire avec sort
+    const shuffled = annonces.sort(() => 0.5 - Math.random());
+
+    return shuffled;
   } catch (error) {
     console.error("Erreur lors de la récupération des annonces :", error);
     throw error;
