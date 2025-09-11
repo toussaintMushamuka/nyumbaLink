@@ -29,95 +29,94 @@ const GetAnnonceItem: React.FC<GetAnnonceItemProps> = ({ annonce }) => {
   return (
     <li
       key={annonce.id}
-      className="border-base-300 border-2 p-4 rounded-xl list-none"
+      className="bg-white shadow-md rounded-xl overflow-hidden hover:shadow-lg transition"
     >
-      <div className="card bg-base-100 w-full">
-        {/* Mini carousel */}
+      {/* Mini carousel */}
+      <div
+        className="relative w-full h-48 overflow-hidden cursor-pointer"
+        onClick={() => setIsOpen(true)}
+      >
         <div
-          className="relative w-full h-48 overflow-hidden rounded-t-xl cursor-pointer"
-          onClick={() => setIsOpen(true)}
+          className="flex w-full h-full transition-transform duration-500 ease-in-out"
+          style={{
+            transform: `translateX(-${currentIndex * 100}%)`,
+          }}
         >
-          <div
-            className="flex w-full h-full transition-transform duration-500 ease-in-out"
-            style={{
-              transform: `translateX(-${currentIndex * 100}%)`,
-            }}
-          >
-            {annonce.images.map((img, idx) => (
-              <div key={idx} className="relative w-full h-48 flex-shrink-0">
-                <Image
-                  src={img}
-                  alt={`Image ${idx + 1}`}
-                  fill
-                  unoptimized
-                  className="object-cover rounded-t-xl"
-                />
-              </div>
-            ))}
-          </div>
-
-          {/* Bouton précédent */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              prevImage();
-            }}
-            className="absolute top-1/2 left-3 -translate-y-1/2 bg-black/50 p-2 rounded-full text-white hover:bg-black/70"
-          >
-            <ChevronLeft size={20} />
-          </button>
-
-          {/* Bouton suivant */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              nextImage();
-            }}
-            className="absolute top-1/2 right-3 -translate-y-1/2 bg-black/50 p-2 rounded-full text-white hover:bg-black/70"
-          >
-            <ChevronRight size={20} />
-          </button>
-
-          {/* Indicateurs */}
-          <div className="absolute bottom-3 w-full flex justify-center gap-2">
-            {annonce.images.map((_, idx) => (
-              <span
-                key={idx}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                  idx === currentIndex ? "bg-white scale-110" : "bg-gray-400"
-                }`}
+          {annonce.images.map((img, idx) => (
+            <div key={idx} className="relative w-full h-48 flex-shrink-0">
+              <Image
+                src={img}
+                alt={`Image ${idx + 1}`}
+                fill
+                unoptimized
+                className="object-cover"
               />
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
 
-        {/* Contenu de l'annonce */}
-        <div className="card-body">
-          <div className="flex justify-between  items-center">
-            <h2 className="card-title">{annonce.commune}</h2>
-            <div className="text-sm bg-accent rounded-md text-white p-2">
-              Disponible
-            </div>
-          </div>
-          <h2 className="card-title">
-            {annonce.quartier} - {annonce.avenue}
-          </h2>
-          <p className="text-gray-500 text-sm">
-            {annonce.description.length > 100
-              ? annonce.description.substring(0, 100) + "..."
-              : annonce.description}
-          </p>
-          <p className="text-gray-500 text-sm">Téléphone: {annonce.numTel}</p>
-          <Link
-            className="card-actions"
-            href={`https://wa.me/${annonce.numTel}?text=Bonjour, je suis intéressé par votre annonce sur NyumbaLink`}
-            target="_blank"
-          >
-            <button className="btn  bg-lime-500 text-white font-bold justify-end">
-              WhatsApp
-            </button>
-          </Link>
+        {/* Boutons */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            prevImage();
+          }}
+          className="absolute top-1/2 left-3 -translate-y-1/2 bg-black/40 p-2 rounded-full text-white hover:bg-black/70"
+        >
+          <ChevronLeft size={20} />
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            nextImage();
+          }}
+          className="absolute top-1/2 right-3 -translate-y-1/2 bg-black/40 p-2 rounded-full text-white hover:bg-black/70"
+        >
+          <ChevronRight size={20} />
+        </button>
+
+        {/* Indicateurs */}
+        <div className="absolute bottom-3 w-full flex justify-center gap-2">
+          {annonce.images.map((_, idx) => (
+            <span
+              key={idx}
+              className={`w-3 h-3 rounded-full transition-all ${
+                idx === currentIndex ? "bg-green-600 scale-110" : "bg-gray-300"
+              }`}
+            />
+          ))}
         </div>
+      </div>
+
+      {/* Contenu de l'annonce */}
+      <div className="p-4">
+        <div className="flex justify-between items-center mb-2">
+          <h2 className="font-bold text-lg text-green-700">
+            {annonce.commune}
+          </h2>
+          <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+            Disponible
+          </span>
+        </div>
+
+        <h3 className="font-medium text-gray-800">
+          {annonce.quartier} - {annonce.avenue}
+        </h3>
+        <p className="text-sm text-gray-600 mt-2">
+          {annonce.description.length > 100
+            ? annonce.description.substring(0, 100) + "..."
+            : annonce.description}
+        </p>
+        <p className="text-sm text-gray-700 mt-2">📞 {annonce.numTel}</p>
+
+        <Link
+          href={`https://wa.me/${annonce.numTel}?text=Bonjour, je suis intéressé par votre annonce sur NyumbaLink`}
+          target="_blank"
+        >
+          <button className="mt-3 w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition">
+            WhatsApp
+          </button>
+        </Link>
       </div>
 
       {/* Popup plein écran */}
@@ -150,16 +149,16 @@ const GetAnnonceItem: React.FC<GetAnnonceItemProps> = ({ annonce }) => {
               ))}
             </div>
 
-            {/* Boutons navigation */}
+            {/* Navigation */}
             <button
               onClick={prevImage}
-              className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/50 p-3 rounded-full text-white hover:bg-black/70"
+              className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/40 p-3 rounded-full text-white hover:bg-black/70"
             >
               <ChevronLeft size={28} />
             </button>
             <button
               onClick={nextImage}
-              className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/50 p-3 rounded-full text-white hover:bg-black/70"
+              className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/40 p-3 rounded-full text-white hover:bg-black/70"
             >
               <ChevronRight size={28} />
             </button>

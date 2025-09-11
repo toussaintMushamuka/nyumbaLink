@@ -10,34 +10,39 @@ const AnnonceItem: React.FC<AnnonceItemProps> = ({ annonce }) => {
   return (
     <li
       key={annonce.id}
-      className="border-base-300 border-2 p-4 rounded-xl list-none hover:border-accent transition-shadow duration-300"
+      className="bg-white border-2 border-green-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:border-green-400 transition-all duration-300 list-none flex flex-col"
     >
-      <div className="card bg-base-100 w-full">
-        <figure className="relative w-full h-48">
-          <Image
-            src={
-              annonce.images && annonce.images.length > 0
-                ? annonce.images[0]
-                : "/placeholder.png"
-            }
-            alt="Annonce Image"
-            fill
-            unoptimized
-            className="object-cover rounded-t-xl"
-          />
-        </figure>
-        <div className="card-body">
-          <h2 className="card-title">
+      {/* Image fixe */}
+      <div className="relative w-full h-48 flex-shrink-0">
+        <Image
+          src={
+            annonce.images && annonce.images.length > 0
+              ? annonce.images[0]
+              : "/placeholder.png"
+          }
+          alt="Annonce Image"
+          fill
+          unoptimized
+          className="object-cover"
+        />
+      </div>
+
+      {/* Contenu */}
+      <div className="p-4 flex-1 flex flex-col justify-between">
+        <div>
+          <h2 className="text-green-700 font-bold text-lg mb-2">
             {annonce.commune} - {annonce.quartier}
           </h2>
-          <p className="text-gray-500 text-sm">
+          <p className="text-gray-600 text-sm mb-4">
             {annonce.description.length > 100
               ? annonce.description.substring(0, 100) + "..."
               : annonce.description}
           </p>
-          <div className="card-actions justify-end">
-            <button className="btn btn-accent">Voir plus</button>
-          </div>
+        </div>
+        <div className="flex justify-end mt-auto">
+          <button className="bg-green-700 hover:bg-green-800 text-white font-semibold py-2 px-4 rounded-lg transition">
+            Voir plus
+          </button>
         </div>
       </div>
     </li>

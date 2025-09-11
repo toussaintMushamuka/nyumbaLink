@@ -12,7 +12,7 @@ const Footer: React.FC<FooterProps> = ({
   year = new Date().getFullYear(),
 }) => {
   return (
-    <footer className="bg-gray-100 dark:bg-gray-900 py-6 mt-10">
+    <footer className="bg-gray-100 dark:bg-gray-900 py-6 mt-10 w-full">
       <div className="container mx-auto flex flex-col md:flex-row justify-between items-center px-4">
         <p className="text-gray-600 dark:text-gray-300 text-sm">
           {text} - {year}
