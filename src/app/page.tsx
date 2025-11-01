@@ -87,7 +87,7 @@ export default function Home() {
                 filtered.map((annonce) => (
                   <div
                     key={annonce.id}
-                    className="bg-white border border-green-200 rounded-xl p-4 shadow-sm hover:shadow-md transition"
+                    className="bg-white border border-green-200 rounded-xl p-4 shadow-sm hover:border-green-500 transition"
                   >
                     <GetAnnonceItem annonce={annonce} />
                   </div>

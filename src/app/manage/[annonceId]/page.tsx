@@ -71,7 +71,7 @@ const Page = ({ params }: { params: Promise<{ annonceId: string }> }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className="odd:bg-green-50 even:bg-green-100">
+                  <tr className="odd:bg-green-50 text-green-700 even:bg-green-100">
                     <td className="py-2 px-3">{annonce.commune}</td>
                     <td className="py-2 px-3">{annonce.quartier}</td>
                     <td className="py-2 px-3">{annonce.avenue}</td>

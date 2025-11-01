@@ -29,7 +29,7 @@ const GetAnnonceItem: React.FC<GetAnnonceItemProps> = ({ annonce }) => {
   return (
     <li
       key={annonce.id}
-      className="bg-white shadow-md rounded-xl overflow-hidden hover:shadow-lg transition"
+      className="bg-white  rounded-xl overflow-hidden hover:transition-shadow"
     >
       {/* Mini carousel */}
       <div

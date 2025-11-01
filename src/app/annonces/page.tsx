@@ -216,7 +216,7 @@ const Page = () => {
               className="textarea textarea-bordered w-full h-24"
               type="text"
               value={description}
-              placeholder="Description"
+              placeholder="Description, ex: 2 chambres, 1 salle de bain, 1 salon, 1 cuisine, 1 balcon"
               onChange={(e) => setDescription(e.target.value)}
               required
             />
